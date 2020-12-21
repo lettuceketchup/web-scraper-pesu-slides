@@ -18,3 +18,8 @@ def info_cont(str):
 
 def info(str):
     print(f'{Fore.LIGHTBLUE_EX}{str}{Style.RESET_ALL}')
+
+def enter(str):
+    inp = input(f'{Fore.LIGHTYELLOW_EX}{str}{Fore.LIGHTGREEN_EX}')
+    print(f'{Style.RESET_ALL}', end='')
+    return inp

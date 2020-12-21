@@ -10,7 +10,7 @@ from colors import task, success, error, info, info_cont
 
 # Define constants/paths
 DRIVER_PATH = './chromedriver'
-URL = 'https://pesuacademy.com/parameters'
+URL = 'https://pesuacademy.com/'
 DOWNLOAD_PATH = './Sounds/'
 
 # Initialize colorama
