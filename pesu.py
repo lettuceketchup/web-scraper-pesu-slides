@@ -1,5 +1,6 @@
 import requests
 import csv
+from time import sleep
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -15,6 +16,13 @@ URL = 'https://pesuacademy.com/'
 LOGINS = 'logins.csv'
 
 # Functions
+# Wait for loading
+def wait_for(driver, path, time = 10):
+    element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, path))
+    )
+    return element
+
 # Connect to database
 def connect(driver):
     '''Connect to PESU Academy'''
@@ -24,9 +32,7 @@ def connect(driver):
         success("Connected")
         try:
             task('Page Loading...')
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, '//button[@id="postloginform#/Academy/j_spring_security_check"]'))
-            )
+            wait_for(driver, '//button[@id="postloginform#/Academy/j_spring_security_check"]')
             success('Page Loaded')
         except:
             error('Page not loaded')
@@ -34,6 +40,8 @@ def connect(driver):
         error("Could not connect to PESU Academy")
         exit_program(driver)
 
+
+# Authentication Functions
 def enter_login():
     '''Enter login details'''
     task('\nEnter login details')
@@ -41,7 +49,7 @@ def enter_login():
     password  = enter('Password: ')
     return usn, password
 
-def login_credentials():
+def login_credentials(default):
     '''Check for saved login details'''
     logins = []
     try:
@@ -65,8 +73,14 @@ def login_credentials():
                     success(f'{logins[i][0]}\t[ {logins[i][1]} ]')
                 info_cont('0: ')
                 info('Someone else')
+
                 # Enter choice
-                ch = enter('Login as:(num) ')
+                if(default == -1):
+                    ch = enter('Login as:(num) ')
+                else:
+                    sleep(0.5)
+                    ch = default
+                    # task('Default choice: ' + default)
                 if(ch != '0'):
                     return logins[int(ch)-1], logins
                 else:
@@ -96,11 +110,11 @@ def try_login(usn, password, driver):
     login_button = driver.find_element_by_xpath('//button[@id="postloginform#/Academy/j_spring_security_check"]')
     login_button.click()
 
-def login(driver):
+def login(driver, default = -1):
     '''Logs into PESU Academy'''
     not_logged_in = True
     while(not_logged_in):
-        [usn, password], logins = login_credentials()
+        [usn, password], logins = login_credentials(default)
         try_login(usn, password, driver)
         try: 
             msg = driver.find_element_by_xpath('//div[@class="login-msg"]')
@@ -110,5 +124,53 @@ def login(driver):
             success("Logged in")
             save_details(usn, password, logins)
             not_logged_in = False
+
+# Subject List
+def get_subject_list(driver):
+    wait_for(driver, "//span[contains(text(), 'My Courses')]//..//..//a").click()
+    table = wait_for(driver, '//table')
+    table_rows = table.find_elements_by_xpath(".//tr")[1::]
+    return table_rows
+
+def chose_subject(driver, subject_list):
+    i = 1
+    task('\nSubjects-')
+    for row in subject_list:
+        sb_row = row.find_elements_by_xpath(".//td")[0:2]
+        task(i, end=' ')
+        info_cont(sb_row[0].text + '\t')
+        info(sb_row[1].text)
+        i+=1
+
+    while(True):
+        ch = int(enter("Choose Subject: ")) - 1
+        if(ch >= 0 and ch < len(subject_list)):
+            subject_list[ch].click()
+            return
+        else:
+            error('Enter a valid choice')
+
+def chose_category():
+    print()
+    info("1: AV Summary")
+    info('2: Live Videos')
+    info('3: Slides')
+    info('0: All three!')
+    return enter('Choose category: ')
+
+def choose_units(driver):
+    list = wait_for(driver, "//ul[@id='courselistunit']")
+    unit_list = list.find_elements_by_xpath(".//*//a")
+    task("\nUnits-")
+    for i in range(len(unit_list)):
+        task(i+1, end= ': ')
+        info(unit_list[i].text)
+    task(0, end= ': ')
+    info('All units')
+    unit = int(enter('Choose unit: '))
+    if(unit == 0):
+        return unit_list
+    elif(unit > 0 and unit <= len(unit_list)):
+        return [unit_list[unit-1]]
 
     

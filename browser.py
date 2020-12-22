@@ -24,8 +24,8 @@ def initialize_driver():
     task("Initializing...")
     options = Options()
     options.add_argument('--log-level=3')
-    # options.add_argument("--window-size=1920,1200")
-    # options.headless = True # For headless mode
+    options.add_argument("--window-size=1920,1200")
+    options.headless = True # For headless mode
 
     try:
         task("\nStarting Browser...")

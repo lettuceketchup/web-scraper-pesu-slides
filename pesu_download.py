@@ -11,7 +11,7 @@ import pesu
 from browser import initialize_driver, exit_program
 
 # Define constants/paths
-DOWNLOAD_PATH = './Slides/'
+DOWNLOAD_PATH = './Downloads/'
 
 # Initialize colorama
 init()
@@ -19,16 +19,25 @@ init()
 # Program Start Functions
 
 # Download Slides
-def download_slides(driver, subject='', subject_code=''):
+def download(driver):
     '''Downloads slides from PESU Academy'''
-    pesu.connect(driver)
-    pesu.login(driver)
+    pesu.connect(driver) # Go to PESU Academy
+    pesu.login(driver, default = 1) # Login
+    subject_list = pesu.get_subject_list(driver)
+    pesu.chose_subject(driver, subject_list)
+    category = pesu.chose_category()
+    units = pesu.choose_units(driver)
+    for i in units:
+        print(i)
 
-# print('Start')
+
+
+
+
+
 if __name__ == '__main__':
-    # print('Starting')
     driver = initialize_driver()
     if(driver):
-        download_slides(driver)
+        download(driver)
 
-        # exit_program(driver)
+        exit_program(driver)
